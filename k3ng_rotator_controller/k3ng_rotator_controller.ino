@@ -472,6 +472,10 @@
   #include <Wire.h>  // required for FEATURE_I2C_LCD, any ADXL345 feature, FEATURE_AZ_POSITION_HMC5883L, FEATURE_EL_POSITION_ADAFRUIT_LSM303
 #endif
 
+#if defined(FEATURE_AZ_POSITION_BNO055) || defined(FEATURE_AZ_POSITION_BNO055)
+  #include <Adafruit_BNO055.h>
+#endif
+
 #if defined(FEATURE_AZ_POSITION_HMC5883L) || defined(FEATURE_AZ_POSITION_HMC5883L_USING_JARZEBSKI_LIBRARY)
   #include <HMC5883L.h> // required for HMC5883L digital compass support
 #endif
@@ -484,7 +488,7 @@
   #include <MechaQMC5883.h>
 #endif 
 
-#if defined(FEATURE_EL_POSITION_ADXL345_USING_ADAFRUIT_LIB) || defined(FEATURE_AZ_POSITION_ADAFRUIT_LSM303) || defined(FEATURE_EL_POSITION_ADAFRUIT_LSM303)
+#if defined(FEATURE_EL_POSITION_ADXL345_USING_ADAFRUIT_LIB) || defined(FEATURE_AZ_POSITION_BNO055) || defined(FEATURE_AZ_POSITION_BNO055) || defined(FEATURE_AZ_POSITION_ADAFRUIT_LSM303) || defined(FEATURE_EL_POSITION_ADAFRUIT_LSM303)
   #include <Adafruit_Sensor.h>    // required for any Adafruit sensor libraries
 #endif
 
@@ -976,6 +980,10 @@ DebugClass debug;
 #if defined(FEATURE_LCD_DISPLAY)
   K3NGdisplay k3ngdisplay(LCD_COLUMNS,LCD_ROWS,LCD_UPDATE_TIME);
 #endif   
+
+#if defined(FEATURE_AZ_POSITION_BNO055) || defined(FEATURE_AZ_POSITION_BNO055)
+  Adafruit_BNO055 compass = Adafruit_BNO055(55);
+#endif //FEATURE_AZ_POSITION_BNO055
 
 #if defined(FEATURE_AZ_POSITION_HMC5883L) || defined(FEATURE_AZ_POSITION_HMC5883L_USING_JARZEBSKI_LIBRARY)
   HMC5883L compass;
@@ -4976,6 +4984,27 @@ void read_azimuth(byte force_read){
         }     
     #endif  //FEATURE_AZ_POSITION_ROTARY_ENCODER_USE_PJRC_LIBRARY
 
+    #ifdef FEATURE_AZ_POSITION_BNO055
+      sensors_event_t orientationData;
+      compass.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
+      
+      #ifdef DEBUG_BNO055
+        debug.print("read_azimuth:");
+        debug.print(orientationData.orientation.x,4);
+        debug.println("");
+      #endif //DEBUG_BNO055
+
+      float heading = orientationData.orientation.x;
+      raw_azimuth = heading * HEADING_MULTIPLIER;
+      if (AZIMUTH_SMOOTHING_FACTOR > 0) {
+        raw_azimuth = (raw_azimuth * (1 - (AZIMUTH_SMOOTHING_FACTOR / 100))) + (previous_raw_azimuth * (AZIMUTH_SMOOTHING_FACTOR / 100));
+      }
+      #ifdef FEATURE_AZIMUTH_CORRECTION
+        raw_azimuth = (correct_azimuth(raw_azimuth / (float) HEADING_MULTIPLIER) * HEADING_MULTIPLIER);
+      #endif // FEATURE_AZIMUTH_CORRECTION
+      raw_azimuth = raw_azimuth + (configuration.azimuth_offset * HEADING_MULTIPLIER);
+      azimuth = raw_azimuth;
+    #endif // FEATURE_AZ_POSITION_BNO055
 
     #ifdef FEATURE_AZ_POSITION_HMC5883L
       MagnetometerScaled scaled = compass.ReadScaledAxis(); // scaled values from compass.
@@ -6057,6 +6086,27 @@ void read_elevation(byte force_read){
           
       }
     #endif // FEATURE_EL_POSITION_ROTARY_ENCODER_USE_PJRC_LIBRARY
+
+    #ifdef FEATURE_EL_POSITION_BNO055
+      sensors_event_t orientationData;
+      compass.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
+      
+      #ifdef DEBUG_BNO055
+        debug.print("read_elevation:");
+        debug.print(orientationData.orientation.z,4);
+        debug.println("");
+      #endif //DEBUG_BNO055
+
+      elevation = int(orientationData.orientation.z * HEADING_MULTIPLIER);
+      
+      #ifdef FEATURE_ELEVATION_CORRECTION
+        elevation = (correct_elevation(elevation / (float) HEADING_MULTIPLIER) * HEADING_MULTIPLIER);
+      #endif // FEATURE_ELEVATION_CORRECTION
+      elevation = elevation + (configuration.elevation_offset * HEADING_MULTIPLIER);
+      if (ELEVATION_SMOOTHING_FACTOR > 0) {
+        elevation = (elevation * (1 - (ELEVATION_SMOOTHING_FACTOR / 100))) + (previous_elevation * (ELEVATION_SMOOTHING_FACTOR / 100));
+      }
+    #endif // FEATURE_EL_POSITION_BNO055
 
     #ifdef FEATURE_EL_POSITION_ADXL345_USING_LOVE_ELECTRON_LIB
       AccelerometerRaw raw = accel.ReadRawAxis();
@@ -14072,6 +14122,3 @@ void service_autopark(){
 
 
 // that's all, folks !
-
-
-
