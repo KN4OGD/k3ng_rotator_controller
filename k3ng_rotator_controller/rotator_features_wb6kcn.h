@@ -221,8 +221,3 @@
 // #define DEBUG_STEPPER
 // #define DEBUG_AUTOCORRECT
 // #define DEBUG_QMC5883  
-
-
-
-
-

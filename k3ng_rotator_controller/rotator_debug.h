@@ -80,4 +80,3 @@ extern SERIAL_PORT_CLASS * control_port;
 // #endif
 
 #endif //_ROTATOR_DEBUG_h
-

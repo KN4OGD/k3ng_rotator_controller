@@ -148,4 +148,3 @@ private:
 };
 
 #endif //_K3NGDISPLAY_H
-

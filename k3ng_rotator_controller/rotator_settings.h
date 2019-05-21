@@ -100,7 +100,7 @@ You can tweak these, but read the online documentation!
 #define ENCODER_PRESET_TIMEOUT 5000
 
 // various code settings
-#define AZIMUTH_TOLERANCE 3.0            // rotator will stop within X degrees when doing autorotation
+#define AZIMUTH_TOLERANCE 1.0            // rotator will stop within X degrees when doing autorotation
 #define ELEVATION_TOLERANCE 0.1 //1.0
 #define OPERATION_TIMEOUT 120000        // timeout for any rotation operation in mS ; 120 seconds is usually enough unless you have the speed turned down
 #define TIMED_INTERVAL_ARRAY_SIZE 20
@@ -113,7 +113,7 @@ You can tweak these, but read the online documentation!
 //#define REMOTE_PORT_MAPPED_TO &Serial1  // change this line to map the remote_unit port to a different serial port
 #define GPS_PORT_MAPPED_TO &Serial2  // change this line to map the GPS port to a different serial port
 //#define GPS_MIRROR_PORT &Serial1 //3 // use this to mirror output from a GPS unit into the Arduino out another port (uncomment to enable)
-#define OPTION_SEND_STRING_OUT_CONTROL_PORT_WHEN_INITIALIZING_STRING ("test\n\r")
+//#define OPTION_SEND_STRING_OUT_CONTROL_PORT_WHEN_INITIALIZING_STRING ("test\n\r")
 
 #define LCD_COLUMNS 20 //16
 #define LCD_ROWS 4 //2       // this is automatically set below for HARDWARE_EA4TX_ARS_USB and HARDWARE_M0UPU
@@ -242,7 +242,7 @@ You can tweak these, but read the online documentation!
 #define SYNC_COORDINATES_WITH_GPS 1
 #define GPS_SYNC_PERIOD_SECONDS 10  // how long to consider internal clock syncronized after a GPS reading
 #define GPS_VALID_FIX_AGE_MS 10000  // consider a GPS reading valid if the fix age is less than this
-#define GPS_UPDATE_LATENCY_COMPENSATION_MS 200
+#define GPS_UPDATE_LATENCY_COMPENSATION_MS 1000
 
 #define SYNC_WITH_RTC_SECONDS 59    // syncronize internal clock with realtime clock every x seconds
 #define SYNC_RTC_TO_GPS_SECONDS 12  // synchronize realtime clock to GPS every x seconds
