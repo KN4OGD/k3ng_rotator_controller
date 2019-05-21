@@ -472,7 +472,7 @@
   #include <Wire.h>  // required for FEATURE_I2C_LCD, any ADXL345 feature, FEATURE_AZ_POSITION_HMC5883L, FEATURE_EL_POSITION_ADAFRUIT_LSM303
 #endif
 
-#if defined(FEATURE_AZ_POSITION_BNO055) || defined(FEATURE_AZ_POSITION_BNO055)
+#if defined(FEATURE_AZ_POSITION_BNO055) || defined(FEATURE_EL_POSITION_BNO055)
   #include <Adafruit_BNO055.h>
 #endif
 
@@ -488,7 +488,7 @@
   #include <MechaQMC5883.h>
 #endif 
 
-#if defined(FEATURE_EL_POSITION_ADXL345_USING_ADAFRUIT_LIB) || defined(FEATURE_AZ_POSITION_BNO055) || defined(FEATURE_AZ_POSITION_BNO055) || defined(FEATURE_AZ_POSITION_ADAFRUIT_LSM303) || defined(FEATURE_EL_POSITION_ADAFRUIT_LSM303)
+#if defined(FEATURE_EL_POSITION_ADXL345_USING_ADAFRUIT_LIB) || defined(FEATURE_AZ_POSITION_BNO055) || defined(FEATURE_EL_POSITION_BNO055) || defined(FEATURE_AZ_POSITION_ADAFRUIT_LSM303) || defined(FEATURE_EL_POSITION_ADAFRUIT_LSM303)
   #include <Adafruit_Sensor.h>    // required for any Adafruit sensor libraries
 #endif
 
@@ -981,8 +981,9 @@ DebugClass debug;
   K3NGdisplay k3ngdisplay(LCD_COLUMNS,LCD_ROWS,LCD_UPDATE_TIME);
 #endif   
 
-#if defined(FEATURE_AZ_POSITION_BNO055) || defined(FEATURE_AZ_POSITION_BNO055)
+#if defined(FEATURE_AZ_POSITION_BNO055) || defined(FEATURE_EL_POSITION_BNO055)
   Adafruit_BNO055 compass = Adafruit_BNO055(55);
+
 #endif //FEATURE_AZ_POSITION_BNO055
 
 #if defined(FEATURE_AZ_POSITION_HMC5883L) || defined(FEATURE_AZ_POSITION_HMC5883L_USING_JARZEBSKI_LIBRARY)
@@ -4992,6 +4993,10 @@ void read_azimuth(byte force_read){
         debug.print("read_azimuth:");
         debug.print(orientationData.orientation.x,4);
         debug.println("");
+        debug.print(orientationData.orientation.y,4);
+        debug.println("");
+        debug.print(orientationData.orientation.z,4);
+        debug.println("");
       #endif //DEBUG_BNO055
 
       float heading = orientationData.orientation.x;
@@ -7489,6 +7494,16 @@ void initialize_peripherals(){
 
   #ifdef FEATURE_WIRE_SUPPORT
     Wire.begin();
+  #endif
+
+  #ifdef FEATURE_AZ_POSITION_BNO055
+    if(!compass.begin())
+    {
+      /* There was a problem detecting the BNO055 ... check your connections */
+      Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
+      while(1);
+    }
+    compass.setExtCrystalUse(true);
   #endif
 
   #ifdef FEATURE_AZ_POSITION_HMC5883L
